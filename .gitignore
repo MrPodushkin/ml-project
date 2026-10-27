@@ -1,7 +1,22 @@
+# Python
 .venv/
 __pycache__/
 *.pyc
+
+# Jupyter
 .ipynb_checkpoints/
+
+# Секреты
 .env
 .env.*
-.DS_Store
+*.pem
+*.key
+
+# Данные и модели
+data/SMSSpamCollection
+data/sms_spam.zip
+data/sms_clean.csv
+models/*.joblib
+
+# Приватные результаты
+metrics/*private*.csv
