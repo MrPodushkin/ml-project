@@ -1,0 +1,112 @@
+{
+  "primary_metric": "f1_spam",
+  "primary_metric_value": 0.916030534351145,
+  "test_size": 1032,
+  "train_size": 4125,
+  "dataset_sha256": "7d039a24a6083ed9ef0f806ebad56bbb976e3aeb8de05669173bfdc4996c239d",
+  "dataset_rows_after_cleaning": 5157,
+  "random_state": 42,
+  "test_fraction": 0.2,
+  "split": "stratified random train/test; duplicate SMS removed before splitting",
+  "model_name": "TF-IDF(1-2grams)+LogisticRegression",
+  "pipeline_steps": [
+    "tfidf",
+    "classifier"
+  ],
+  "vectorizer_parameters": {
+    "ngram_range": [
+      1,
+      2
+    ],
+    "min_df": 2,
+    "max_features": 30000
+  },
+  "classifier_parameters": {
+    "max_iter": 1000,
+    "random_state": 42,
+    "class_weight": "balanced"
+  },
+  "train_seconds": 0.2249,
+  "versions": {
+    "python": "3.14.4",
+    "sklearn": "1.9.1",
+    "pandas": "3.0.6"
+  },
+  "model_metrics": {
+    "accuracy": 0.9786821705426356,
+    "precision_spam": 0.8955223880597015,
+    "recall_spam": 0.9375,
+    "f1_spam": 0.916030534351145,
+    "per_class": {
+      "ham": {
+        "precision": 0.9910913140311804,
+        "recall": 0.9845132743362832,
+        "f1": 0.9877913429522752
+      },
+      "spam": {
+        "precision": 0.8955223880597015,
+        "recall": 0.9375,
+        "f1": 0.916030534351145
+      }
+    }
+  },
+  "most_frequent_baseline": {
+    "accuracy": 0.875968992248062,
+    "precision_spam": 0.0,
+    "recall_spam": 0.0,
+    "f1_spam": 0.0,
+    "per_class": {
+      "ham": {
+        "precision": 0.875968992248062,
+        "recall": 1.0,
+        "f1": 0.9338842975206612
+      },
+      "spam": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      }
+    }
+  },
+  "classification_report": {
+    "ham": {
+      "precision": 0.9910913140311804,
+      "recall": 0.9845132743362832,
+      "f1-score": 0.9877913429522752,
+      "support": 904.0
+    },
+    "spam": {
+      "precision": 0.8955223880597015,
+      "recall": 0.9375,
+      "f1-score": 0.916030534351145,
+      "support": 128.0
+    },
+    "accuracy": 0.9786821705426356,
+    "macro avg": {
+      "precision": 0.943306851045441,
+      "recall": 0.9610066371681416,
+      "f1-score": 0.9519109386517102,
+      "support": 1032.0
+    },
+    "weighted avg": {
+      "precision": 0.9792378038331675,
+      "recall": 0.9786821705426356,
+      "f1-score": 0.9788907775443831,
+      "support": 1032.0
+    }
+  },
+  "confusion_matrix_labels": [
+    "ham",
+    "spam"
+  ],
+  "confusion_matrix": [
+    [
+      890,
+      14
+    ],
+    [
+      8,
+      120
+    ]
+  ]
+}
