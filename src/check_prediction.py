@@ -16,12 +16,12 @@ model = load_model()
 
 messages = [
     "Hello, how are you?",
-    "Congratulations! You won a free prize!",
-    "",
+    "Call",
     None,
     12345,
     "A" * 1500,
     "\x00Invalid message",
+    "Привет!  Киберустойчивость",
 ]
 
 for i, message in enumerate(messages, 1):

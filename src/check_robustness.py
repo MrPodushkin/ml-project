@@ -111,6 +111,8 @@ rows = []
 for index, row in sample.iterrows():
     original = row["message"]
     modified = modify_message(original, index)
+    print(original, '/n',modified)
+
 
     pred_before = predict_sms(original, model)
     pred_after = predict_sms(modified, model)

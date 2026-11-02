@@ -1,0 +1,16 @@
+{
+    "model": "TF-IDF + LogisticRegression",
+    "seed": 42,
+    "sample_size": 20,
+    "ham_count": 10,
+    "spam_count": 10,
+    "changed_predictions": 0,
+    "changed_fraction": 0.0,
+    "f1_spam_before": 0.8888888888888888,
+    "f1_spam_after": 0.8888888888888888,
+    "f1_difference": 0.0,
+    "unusual_input": {
+        "status": "accepted",
+        "prediction": "ham"
+    }
+}
