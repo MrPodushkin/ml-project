@@ -1,0 +1,38 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.4, pytest-9.1.1, pluggy-1.7.0 -- /home/mluser/ml-project/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/mluser/ml-project
+plugins: anyio-4.15.1, platformdirs-4.13.5
+collecting ... collected 29 items
+
+tests/test_predict.py::test_wrong_type_never_calls_model[123] PASSED     [  3%]
+tests/test_predict.py::test_wrong_type_never_calls_model[None] PASSED    [  6%]
+tests/test_predict.py::test_wrong_type_never_calls_model[bad_input2] PASSED [ 10%]
+tests/test_predict.py::test_wrong_type_never_calls_model[bad_input3] PASSED [ 13%]
+tests/test_predict.py::test_blank_never_calls_model PASSED               [ 17%]
+tests/test_predict.py::test_oversized_never_calls_model PASSED           [ 20%]
+tests/test_predict.py::test_invalid_nul_never_calls_model PASSED         [ 24%]
+tests/test_predict.py::test_invalid_unicode_never_calls_model PASSED     [ 27%]
+tests/test_predict.py::test_positive_calls_model_once PASSED             [ 31%]
+tests/test_predict_sms.py::test_invalid_inputs[None] PASSED              [ 34%]
+tests/test_predict_sms.py::test_invalid_inputs[12345] PASSED             [ 37%]
+tests/test_predict_sms.py::test_invalid_inputs[] PASSED                  [ 41%]
+tests/test_predict_sms.py::test_invalid_inputs[   ] PASSED               [ 44%]
+tests/test_predict_sms.py::test_invalid_inputs[nan] PASSED               [ 48%]
+tests/test_predict_sms.py::test_invalid_inputs[inf] PASSED               [ 51%]
+tests/test_predict_sms.py::test_invalid_inputs[AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA] PASSED [ 55%]
+tests/test_predict_sms.py::test_invalid_inputs[Hello\x00world] PASSED    [ 58%]
+tests/test_predict_sms.py::test_invalid_inputs[\ud800] PASSED            [ 62%]
+tests/test_predict_sms.py::test_valid_inputs[Hello, how are you?] PASSED [ 65%]
+tests/test_predict_sms.py::test_valid_inputs[See you tomorrow at 5 PM.] PASSED [ 68%]
+tests/test_predict_sms.py::test_valid_inputs[Congratulations! Claim your free prize now!] PASSED [ 72%]
+tests/test_predict_sms.py::test_valid_inputs[\U0001f381 Special offer!] PASSED [ 75%]
+tests/test_predict_sms.py::test_valid_inputs[\u041f\u0440\u0438\u0432\u0435\u0442! \u041a\u0430\u043a \u0434\u0435\u043b\u0430?] PASSED [ 79%]
+tests/test_predict_sms.py::test_prediction_matches_pipeline PASSED       [ 82%]
+tests/test_predict_sms.py::test_prediction_is_deterministic PASSED       [ 86%]
+tests/test_predict_sms.py::test_message_length_boundary PASSED           [ 89%]
+tests/test_predict_sms.py::test_missing_model PASSED                     [ 93%]
+tests/test_predict_sms.py::test_expected_predictions[Hey, are we still meeting tonight?-ham] PASSED [ 96%]
+tests/test_predict_sms.py::test_expected_predictions[I'll call you when I get home.-ham] PASSED [100%]
+
+============================== 29 passed in 1.44s ==============================
