@@ -21,3 +21,6 @@ models/*.joblib
 # Приватные результаты
 metrics/*private*.csv
 .pytest_cache/
+
+# Local backups
+*.py.bak
