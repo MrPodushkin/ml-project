@@ -1,50 +1,24 @@
+"""Legacy API uses the same real canonical artifact."""
 import pytest
+from src.predict import InputValidationError,load_model,predict_sms,validate_message
 
-from src.predict import (
-    InputValidationError,
-    load_model,
-    predict_sms,
-    validate_message,
-)
+def test_compat_prediction_matches_actual_pipeline():
+    model=load_model()
+    message='Hello, how are you?'
+    assert predict_sms(message,model)==model.predict([message])[0]
 
-
-@pytest.fixture(scope="module")
-def real_model():
-    return load_model()
-
-
-def test_compat_prediction(real_model):
-    result = predict_sms(
-        "Hello, how are you?",
-        real_model,
-    )
-
-    assert result == "ham"
-
-
-def test_compat_invalid_message(real_model):
+def test_compat_invalid_message():
     with pytest.raises(InputValidationError):
-        predict_sms(None, real_model)
+        predict_sms(None,load_model())
 
-
-def test_compat_length_limit(real_model):
+def test_compat_length_limit():
     with pytest.raises(InputValidationError):
-        predict_sms(
-            "A" * 21,
-            real_model,
-            max_chars=20,
-        )
-
+        predict_sms('A'*21,load_model(),max_chars=20)
 
 def test_compat_valid_message():
-    result = validate_message(
-        "Hello",
-        max_chars=20,
-    )
+    assert validate_message('Hello',max_chars=20)=='Hello'
 
-    assert result == "Hello"
-
-
-def test_compat_invalid_limit():
+@pytest.mark.parametrize('limit',[0,-1,True,1.5,1001])
+def test_invalid_limit(limit):
     with pytest.raises(ValueError):
-        validate_message("Hello", max_chars=0)
+        validate_message('Hello',max_chars=limit)

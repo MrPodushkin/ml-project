@@ -1,35 +1,6 @@
-"""Совместимый интерфейс предсказания для старых модулей проекта."""
+"""Compatibility names delegating to the single validated implementation."""
+from src.predict_sms import InputValidationError, load_model, predict_sms, validate_sms
+from src.predict_sms import MAX_MESSAGE_LENGTH as MAX_SMS_CHARS
 
-from src.predict_sms import (
-    InputValidationError,
-    load_model,
-    predict_sms as _predict_sms,
-    validate_sms,
-)
-
-
-MAX_SMS_CHARS = 1000
-
-
-def validate_message(message, max_chars=MAX_SMS_CHARS):
-    if (
-        not isinstance(max_chars, int)
-        or isinstance(max_chars, bool)
-        or max_chars < 1
-    ):
-        raise ValueError("max_chars должен быть положительным целым числом")
-
-    if not isinstance(message, str):
-        raise InputValidationError("Ожидается строка SMS")
-
-    if len(message) > max_chars:
-        raise InputValidationError(
-            f"Длина SMS превышает лимит {max_chars} символов"
-        )
-
-    return validate_sms(message)
-
-
-def predict_sms(message, model, max_chars=MAX_SMS_CHARS):
-    clean_message = validate_message(message, max_chars)
-    return _predict_sms(clean_message, model)
+def validate_message(message,max_chars=MAX_SMS_CHARS):
+    return validate_sms(message,max_chars)

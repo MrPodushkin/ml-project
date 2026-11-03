@@ -7,7 +7,14 @@
   "dataset_rows_after_cleaning": 5157,
   "random_state": 42,
   "test_fraction": 0.2,
-  "split": "stratified random train/test; duplicate SMS removed before splitting",
+  "split": "stratified random 80/20; normalized duplicates removed BEFORE splitting",
+  "split_fingerprints": {
+    "train": "2f44721bcf320c4790d71c2c73e1803e9e25925c80005d3520a22a593fe5e1b2",
+    "test": "1f4049c132707c8d11a81382eb28dac88cc23ab5a4d2465595aa8f88008051cc"
+  },
+  "normalized_train_test_overlap": 0,
+  "model_file": "models/spam_pipeline.joblib",
+  "model_sha256": "f054edc2c35248ad9cb26a78ce7d8be044558fe39d3d73d8cf487777bbfeb06a",
   "model_name": "TF-IDF(1-2grams)+LogisticRegression",
   "pipeline_steps": [
     "tfidf",
@@ -26,11 +33,12 @@
     "random_state": 42,
     "class_weight": "balanced"
   },
-  "train_seconds": 0.2249,
+  "train_seconds": 0.2082,
   "versions": {
     "python": "3.14.4",
     "sklearn": "1.9.1",
-    "pandas": "3.0.6"
+    "pandas": "3.0.6",
+    "joblib": "1.6.0"
   },
   "model_metrics": {
     "accuracy": 0.9786821705426356,

@@ -2,7 +2,7 @@ from src.predict_sms import load_model, predict_sms, InputValidationError
 
 
 def main():
-    model = load_model("models/spam_model.joblib")
+    model = load_model()
 
     print("=== ПРОВЕРКА SMS НА СПАМ ===")
     print("Введите сообщение для проверки.")

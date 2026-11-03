@@ -1,0 +1,35 @@
+{
+  "model_file": "models/spam_pipeline.joblib",
+  "model_sha256": "f054edc2c35248ad9cb26a78ce7d8be044558fe39d3d73d8cf487777bbfeb06a",
+  "dataset_sha256": "7d039a24a6083ed9ef0f806ebad56bbb976e3aeb8de05669173bfdc4996c239d",
+  "test_size": 1032,
+  "metrics": {
+    "accuracy": 0.9786821705426356,
+    "precision_spam": 0.8955223880597015,
+    "recall_spam": 0.9375,
+    "f1_spam": 0.916030534351145,
+    "per_class": {
+      "ham": {
+        "precision": 0.9910913140311804,
+        "recall": 0.9845132743362832,
+        "f1": 0.9877913429522752
+      },
+      "spam": {
+        "precision": 0.8955223880597015,
+        "recall": 0.9375,
+        "f1": 0.916030534351145
+      }
+    }
+  },
+  "matches_baseline": true,
+  "confusion_matrix": [
+    [
+      890,
+      14
+    ],
+    [
+      8,
+      120
+    ]
+  ]
+}

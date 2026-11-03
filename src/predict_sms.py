@@ -1,81 +1,28 @@
-
-from pathlib import Path
-import joblib
+"""Single public prediction function; validation precedes the real Pipeline."""
+from src.model_utils import load_model
 
 MAX_MESSAGE_LENGTH = 1000
 
-
 class InputValidationError(ValueError):
-    """Ошибка проверки входного SMS."""
+    """Controlled rejection of an invalid SMS."""
 
-
-def validate_sms(message):
-    """
-    Проверяет входное SMS и возвращает корректную строку.
-    """
-
-    # 1. Проверка типа
-    if not isinstance(message, str):
-        raise InputValidationError(
-            "SMS должно быть строкой (str)."
-        )
-
-    # 2. Проверка пустого сообщения
+def validate_sms(message, max_chars=MAX_MESSAGE_LENGTH):
+    if not isinstance(max_chars,int) or isinstance(max_chars,bool) or not 1 <= max_chars <= MAX_MESSAGE_LENGTH:
+        raise ValueError('max_chars должен быть целым числом от 1 до 1000')
+    if not isinstance(message,str):
+        raise InputValidationError('SMS должно быть строкой (str); NaN, Inf и None отклоняются')
+    if len(message) > max_chars:
+        raise InputValidationError(f'SMS превышает ограничение {max_chars} символов')
     if not message.strip():
-        raise InputValidationError(
-            "SMS не должно быть пустым."
-        )
-
-    # 3. Проверка длины
-    if len(message) > MAX_MESSAGE_LENGTH:
-        raise InputValidationError(
-            f"SMS превышает ограничение "
-            f"{MAX_MESSAGE_LENGTH} символов."
-        )
-
-    # 4. Проверка нулевых байтов
-    if "\x00" in message:
-        raise InputValidationError(
-            "SMS содержит запрещённый нулевой байт."
-        )
-
-    # 5. Проверка некорректного Unicode
+        raise InputValidationError('SMS не должно быть пустым')
+    if '\x00' in message:
+        raise InputValidationError('SMS содержит запрещённый нулевой байт')
     try:
-        message.encode("utf-8")
+        message.encode('utf-8')
     except UnicodeEncodeError as exc:
-        raise InputValidationError(
-            "SMS содержит некорректные Unicode-символы."
-        ) from exc
-
+        raise InputValidationError('SMS содержит некорректные Unicode-символы') from exc
     return message
 
-
-def predict_sms(message, model):
-    """
-    Проверяет SMS, выполняет предобработку
-    и возвращает предсказание модели.
-    """
-
-    clean_message = validate_sms(message)
-
-    # TF-IDF уже включён в обученный Pipeline.
-    prediction = model.predict([clean_message])
-
-    return str(prediction[0])
-
-
-def load_model(
-    model_path="models/spam_model.joblib"
-):
-    """
-    Загружает локальную проверенную модель.
-    """
-    path = Path(model_path)
-
-    if not path.is_file():
-        raise FileNotFoundError(
-            f"Файл модели не найден: {path}"
-        )
-
-    return joblib.load(path)
-
+def predict_sms(message, model, max_chars=MAX_MESSAGE_LENGTH):
+    clean = validate_sms(message,max_chars)
+    return str(model.predict([clean])[0])

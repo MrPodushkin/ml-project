@@ -1,25 +1,166 @@
 {
-    "Простые изменения": {
-        "changed_predictions": 0,
-        "changed_fraction": 0.0,
-        "f1_before": 0.8471615720524017,
-        "f1_after": 0.8471615720524017,
-        "accuracy_before": 0.9661508704061895,
-        "accuracy_after": 0.9661508704061895
+  "sample_size": 20,
+  "sample_ids": [
+    5057,
+    2768,
+    1847,
+    3427,
+    1821,
+    2756,
+    2727,
+    3109,
+    817,
+    2549,
+    3599,
+    2628,
+    5038,
+    297,
+    2190,
+    99,
+    610,
+    1143,
+    1492,
+    3839
+  ],
+  "selection": "10 spam + 10 ham from the canonical held-out test; selection fixed before prediction",
+  "seed": 42,
+  "sample_train_overlap": 0,
+  "model_file": "models/spam_pipeline.joblib",
+  "model_sha256": "f054edc2c35248ad9cb26a78ce7d8be044558fe39d3d73d8cf487777bbfeb06a",
+  "dataset_sha256": "7d039a24a6083ed9ef0f806ebad56bbb976e3aeb8de05669173bfdc4996c239d",
+  "split_fingerprints": {
+    "train": "2f44721bcf320c4790d71c2c73e1803e9e25925c80005d3520a22a593fe5e1b2",
+    "test": "1f4049c132707c8d11a81382eb28dac88cc23ab5a4d2465595aa8f88008051cc"
+  },
+  "experiments": {
+    "case_spaces": {
+      "changed_predictions": 0,
+      "changed_fraction": 0.0,
+      "before": {
+        "accuracy": 0.95,
+        "precision_spam": 1.0,
+        "recall_spam": 0.9,
+        "f1_spam": 0.9473684210526315,
+        "per_class": {
+          "ham": {
+            "precision": 0.9090909090909091,
+            "recall": 1.0,
+            "f1": 0.9523809523809523
+          },
+          "spam": {
+            "precision": 1.0,
+            "recall": 0.9,
+            "f1": 0.9473684210526315
+          }
+        }
+      },
+      "after": {
+        "accuracy": 0.95,
+        "precision_spam": 1.0,
+        "recall_spam": 0.9,
+        "f1_spam": 0.9473684210526315,
+        "per_class": {
+          "ham": {
+            "precision": 0.9090909090909091,
+            "recall": 1.0,
+            "f1": 0.9523809523809523
+          },
+          "spam": {
+            "precision": 1.0,
+            "recall": 0.9,
+            "f1": 0.9473684210526315
+          }
+        }
+      }
     },
-    "Замена букв цифрами": {
-        "changed_predictions": 82,
-        "changed_fraction": 0.07930367504835589,
-        "f1_before": 0.8471615720524017,
-        "f1_after": 0.3184713375796178,
-        "accuracy_before": 0.9661508704061895,
-        "accuracy_after": 0.8965183752417795
+    "single_typo": {
+      "changed_predictions": 1,
+      "changed_fraction": 0.05,
+      "before": {
+        "accuracy": 0.95,
+        "precision_spam": 1.0,
+        "recall_spam": 0.9,
+        "f1_spam": 0.9473684210526315,
+        "per_class": {
+          "ham": {
+            "precision": 0.9090909090909091,
+            "recall": 1.0,
+            "f1": 0.9523809523809523
+          },
+          "spam": {
+            "precision": 1.0,
+            "recall": 0.9,
+            "f1": 0.9473684210526315
+          }
+        }
+      },
+      "after": {
+        "accuracy": 1.0,
+        "precision_spam": 1.0,
+        "recall_spam": 1.0,
+        "f1_spam": 1.0,
+        "per_class": {
+          "ham": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          },
+          "spam": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0
+          }
+        }
+      }
     },
-    "control_example": {
-        "prediction_before": "spam",
-        "prediction_after": "ham",
-        "changed": true
-    },
-    "sample_size": 1034,
-    "seed": 42
+    "leet_stress": {
+      "changed_predictions": 5,
+      "changed_fraction": 0.25,
+      "before": {
+        "accuracy": 0.95,
+        "precision_spam": 1.0,
+        "recall_spam": 0.9,
+        "f1_spam": 0.9473684210526315,
+        "per_class": {
+          "ham": {
+            "precision": 0.9090909090909091,
+            "recall": 1.0,
+            "f1": 0.9523809523809523
+          },
+          "spam": {
+            "precision": 1.0,
+            "recall": 0.9,
+            "f1": 0.9473684210526315
+          }
+        }
+      },
+      "after": {
+        "accuracy": 0.7,
+        "precision_spam": 1.0,
+        "recall_spam": 0.4,
+        "f1_spam": 0.5714285714285714,
+        "per_class": {
+          "ham": {
+            "precision": 0.625,
+            "recall": 1.0,
+            "f1": 0.7692307692307693
+          },
+          "spam": {
+            "precision": 1.0,
+            "recall": 0.4,
+            "f1": 0.5714285714285714
+          }
+        }
+      }
+    }
+  },
+  "atypical_input": {
+    "case": "emoji-only synthetic SMS",
+    "prediction": "ham",
+    "tfidf_nonzero_features": 0,
+    "interpretation": "Форма допустима, но словарных признаков нет; ответ не доказывает применимость модели. OOD не утверждается."
+  },
+  "oversized_input_rejected": "SMS превышает ограничение 1000 символов",
+  "conclusion": "Результаты описывают только эти 20 объектов и выбранные изменения. Регистр и пробелы нормализуются TF-IDF; общая устойчивость не доказана.",
+  "proposed_measure": "Проверить нормализацию типичных замен букв на отдельной validation/CV внутри train; не настраивать защиту по test. Для входов без словарных признаков рассмотреть отказ с ручной обработкой."
 }

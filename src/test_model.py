@@ -1,18 +1,9 @@
+"""Compatibility command; delegates to src.demo_predict, without a second procedure."""
+if __package__ in (None, ''):
+    import sys
+    from pathlib import Path
+    sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from src.demo_predict import main
 
-import joblib
-
-model = joblib.load("models/spam_model.joblib")
-
-messages = [
-    "Hi, are we meeting at 6 tonight?",
-    "Congratulations! You won a free prize. Claim now!",
-    "Please call me when you arrive.",
-    "URGENT! You have won cash. Click to claim."
-]
-
-for message in messages:
-    prediction = model.predict([message])[0]
-    print(f"Сообщение: {message}")
-    print(f"Предсказание: {prediction}")
-    print("-" * 40)
-
+if __name__=='__main__':
+    main()

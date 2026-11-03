@@ -1,5 +1,4 @@
-"""Train the reproducible TF-IDF + LogisticRegression baseline on CPU."""
-from pathlib import Path
+"""Canonical CPU baseline: normalized deduplication, stratified split, one model."""
 import json
 import platform
 import time
@@ -9,91 +8,78 @@ import sklearn
 from sklearn.dummy import DummyClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (accuracy_score, precision_recall_fscore_support,
-                             classification_report, confusion_matrix)
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, classification_report, confusion_matrix
 from sklearn.pipeline import Pipeline
-from src.data_utils import load_and_check, sha256_file
-from src.predict import predict_sms
+from src.data_utils import ROOT, SEED, TEST_FRACTION, load_and_check, sha256_file, split_dataset, split_fingerprints
+from src.model_utils import MODEL_PATH, MODEL_HASH_PATH, load_model
+from src.predict_sms import predict_sms
 
-SEED = 42
-TEST_SIZE = 0.20
-METRIC_DIR = Path('metrics')
-MODEL_FILE = Path('models/spam_pipeline.joblib')
+METRIC_DIR = ROOT / 'metrics'
 
+def save_json(path,value):
+    path.write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
 
-def score(y_true, y_pred):
-    p, r, f1, _ = precision_recall_fscore_support(
-        y_true, y_pred, labels=['ham', 'spam'], zero_division=0)
-    return {
-        'accuracy': float(accuracy_score(y_true, y_pred)),
-        'precision_spam': float(p[1]), 'recall_spam': float(r[1]),
-        'f1_spam': float(f1[1]),
-        'per_class': {
-            'ham': {'precision': float(p[0]), 'recall': float(r[0]), 'f1': float(f1[0])},
-            'spam': {'precision': float(p[1]), 'recall': float(r[1]), 'f1': float(f1[1])}
-        }
-    }
+def score(y_true,y_pred):
+    p,r,f,_ = precision_recall_fscore_support(y_true,y_pred,labels=['ham','spam'],zero_division=0)
+    return {'accuracy':float(accuracy_score(y_true,y_pred)), 'precision_spam':float(p[1]),
+            'recall_spam':float(r[1]),'f1_spam':float(f[1]),
+            'per_class':{label:{'precision':float(p[i]),'recall':float(r[i]),'f1':float(f[i])}
+                         for i,label in enumerate(['ham','spam'])}}
 
+def plot_confusion(matrix):
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    from sklearn.metrics import ConfusionMatrixDisplay
+    ConfusionMatrixDisplay(matrix,display_labels=['ham','spam']).plot(cmap='Blues',values_format='d')
+    plt.title('SMS baseline: held-out test')
+    plt.tight_layout()
+    plt.savefig(METRIC_DIR/'confusion_matrix.png',dpi=150)
+    plt.close()
 
 def train_and_evaluate():
-    METRIC_DIR.mkdir(parents=True, exist_ok=True)
-    MODEL_FILE.parent.mkdir(parents=True, exist_ok=True)
-    df, data_report = load_and_check()
-    Path('metrics/data_check.json').write_text(json.dumps(data_report, indent=2, ensure_ascii=False), encoding='utf-8')
-    x_train, x_test, y_train, y_test = train_test_split(
-        df['message'].astype(str), df['label'].astype(str), test_size=TEST_SIZE,
-        random_state=SEED, stratify=df['label'])
-    pipeline = Pipeline([
-        ('tfidf', TfidfVectorizer(ngram_range=(1, 2), min_df=2, max_features=30000)),
-        ('classifier', LogisticRegression(max_iter=1000, random_state=SEED, class_weight='balanced'))
-    ])
-    start = time.perf_counter()
-    pipeline.fit(x_train, y_train)
-    seconds = time.perf_counter() - start
-    predicted = pipeline.predict(x_test)
-    majority = DummyClassifier(strategy='most_frequent')
-    majority.fit(x_train.to_frame(), y_train)
-    baseline_pred = majority.predict(x_test.to_frame())
-    metrics = {
-        'primary_metric': 'f1_spam',
-        'primary_metric_value': score(y_test, predicted)['f1_spam'],
-        'test_size': len(y_test), 'train_size': len(y_train),
-        'dataset_sha256': data_report['dataset_sha256'],
-        'dataset_rows_after_cleaning': len(df),
-        'random_state': SEED, 'test_fraction': TEST_SIZE,
-        'split': 'stratified random train/test; duplicate SMS removed before splitting',
-        'model_name': 'TF-IDF(1-2grams)+LogisticRegression',
-        'pipeline_steps': ['tfidf', 'classifier'],
-        'vectorizer_parameters': {'ngram_range': [1, 2], 'min_df': 2, 'max_features': 30000},
-        'classifier_parameters': {'max_iter': 1000, 'random_state': SEED, 'class_weight': 'balanced'},
-        'train_seconds': round(seconds, 4),
-        'versions': {'python': platform.python_version(), 'sklearn': sklearn.__version__, 'pandas': pd.__version__},
-        'model_metrics': score(y_test, predicted),
-        'most_frequent_baseline': score(y_test, baseline_pred),
-        'classification_report': classification_report(y_test, predicted, output_dict=True, zero_division=0),
-        'confusion_matrix_labels': ['ham', 'spam'],
-        'confusion_matrix': confusion_matrix(y_test, predicted, labels=['ham', 'spam']).tolist()
-    }
-    METRIC_DIR.joinpath('baseline.json').write_text(json.dumps(metrics, indent=2, ensure_ascii=False), encoding='utf-8')
-    # These holdout texts are kept LOCALLY, ignored by Git, and never used to fit.
-    holdout = pd.DataFrame({'message': x_test.to_numpy(), 'label': y_test.to_numpy(), 'prediction': predicted})
-    holdout.to_csv(METRIC_DIR / 'holdout_private.csv', index=False)
-    failures = holdout[holdout.label != holdout.prediction].head(5)
-    # Avoid accidentally publishing text: keep wrong examples only in private local file.
-    failures.to_csv(METRIC_DIR / 'errors_private.csv', index=False)
-    joblib.dump(pipeline, MODEL_FILE)
-    METRIC_DIR.joinpath('model.sha256').write_text(f'{sha256_file(MODEL_FILE)}  {MODEL_FILE}\n', encoding='utf-8')
-    # Verify load and validated prediction.
-    recovered = joblib.load(MODEL_FILE)
-    sanity = predict_sms('Congratulations! You won a free prize', recovered)
-    print('Загруженная модель отвечает:', sanity)
-    print('Проверка данных:', data_report)
-    print('Метрики:', json.dumps(metrics['model_metrics'], ensure_ascii=False, indent=2))
-    print('Простой baseline:', json.dumps(metrics['most_frequent_baseline'], ensure_ascii=False, indent=2))
-    print('Ошибочные предсказания (количество):', int((holdout.label != holdout.prediction).sum()))
+    METRIC_DIR.mkdir(exist_ok=True)
+    MODEL_PATH.parent.mkdir(exist_ok=True)
+    df,report = load_and_check()
+    train,test = split_dataset(df)
+    model = Pipeline([
+        ('tfidf',TfidfVectorizer(ngram_range=(1,2),min_df=2,max_features=30000)),
+        ('classifier',LogisticRegression(max_iter=1000,random_state=SEED,class_weight='balanced'))])
+    started = time.perf_counter()
+    model.fit(train.message.astype(str),train.label.astype(str))
+    seconds = time.perf_counter()-started
+    predicted = model.predict(test.message.astype(str))
+    dummy = DummyClassifier(strategy='most_frequent')
+    dummy.fit(train[['message']],train.label)
+    dummy_pred = dummy.predict(test[['message']])
+    joblib.dump(model,MODEL_PATH)
+    model_hash = sha256_file(MODEL_PATH)
+    MODEL_HASH_PATH.write_text(f'{model_hash}  models/spam_pipeline.joblib\n',encoding='utf-8')
+    matrix = confusion_matrix(test.label,predicted,labels=['ham','spam'])
+    metrics = {'primary_metric':'f1_spam','primary_metric_value':score(test.label,predicted)['f1_spam'],
+        'test_size':len(test),'train_size':len(train),'dataset_sha256':report['dataset_sha256'],
+        'dataset_rows_after_cleaning':len(df),'random_state':SEED,'test_fraction':TEST_FRACTION,
+        'split':'stratified random 80/20; normalized duplicates removed BEFORE splitting',
+        'split_fingerprints':split_fingerprints(train,test),'normalized_train_test_overlap':0,
+        'model_file':'models/spam_pipeline.joblib','model_sha256':model_hash,
+        'model_name':'TF-IDF(1-2grams)+LogisticRegression','pipeline_steps':['tfidf','classifier'],
+        'vectorizer_parameters':{'ngram_range':[1,2],'min_df':2,'max_features':30000},
+        'classifier_parameters':{'max_iter':1000,'random_state':SEED,'class_weight':'balanced'},
+        'train_seconds':round(seconds,4),'versions':{'python':platform.python_version(),'sklearn':sklearn.__version__,'pandas':pd.__version__,'joblib':joblib.__version__},
+        'model_metrics':score(test.label,predicted),'most_frequent_baseline':score(test.label,dummy_pred),
+        'classification_report':classification_report(test.label,predicted,output_dict=True,zero_division=0),
+        'confusion_matrix_labels':['ham','spam'],'confusion_matrix':matrix.tolist()}
+    holdout = test.copy()
+    holdout['prediction'] = predicted
+    holdout.to_csv(METRIC_DIR/'holdout_private.csv',index=True,index_label='row_id')
+    holdout[holdout.label!=holdout.prediction].to_csv(METRIC_DIR/'errors_private.csv',index=True,index_label='row_id')
+    save_json(METRIC_DIR/'data_check.json',report)
+    save_json(METRIC_DIR/'baseline.json',metrics)
+    plot_confusion(matrix)
+    recovered = load_model()
+    print('Reload sanity:',predict_sms('Congratulations! You won a free prize',recovered))
+    print(json.dumps({'train_size':len(train),'test_size':len(test),'metrics':metrics['model_metrics'],'dummy':metrics['most_frequent_baseline']},indent=2))
     return metrics
 
-
-if __name__ == '__main__':
+if __name__=='__main__':
     train_and_evaluate()
