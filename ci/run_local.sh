@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 cd "$(dirname "$0")/.."
+source ci/env.sh
 mkdir -p ci-artifacts
 python -m ci.record_stage initialize not_run
 current_stage=""

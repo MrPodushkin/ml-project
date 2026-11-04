@@ -7,7 +7,9 @@ src/**
 !src/model_utils.py
 !src/predict_sms.py
 !src/container_predict.py
-!models/
-models/**
-!models/spam_pipeline.joblib
-!model.sha256
+!ci-artifacts/
+ci-artifacts/**
+!ci-artifacts/runtime/
+ci-artifacts/runtime/**
+!ci-artifacts/runtime/spam_pipeline.joblib
+!ci-artifacts/runtime/model.sha256

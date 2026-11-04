@@ -5,10 +5,10 @@ import json
 import pytest
 from sklearn.metrics import f1_score
 
-from src.data_utils import ROOT, load_and_check, normalized_keys, sha256_file, split_dataset
+from src.data_utils import load_and_check, normalized_keys, sha256_file, split_dataset
 from src.evaluate_model import load_experiment
 from src.model_utils import MODEL_PATH
-from src.robustness import small_typo
+from src.robustness import ROBUSTNESS_PATH, small_typo
 
 
 def test_real_dataset_integrity_and_no_normalized_overlap():
@@ -31,7 +31,7 @@ def test_loaded_real_model_reproduces_baseline():
 
 def test_robustness_uses_real_model_test_only():
     train, test, _, baseline = load_experiment()
-    report = json.loads((ROOT / "metrics/robustness.json").read_text())
+    report = json.loads(ROBUSTNESS_PATH.read_text())
     assert report["sample_size"] == 20
     assert len(set(report["sample_ids"])) == 20
     assert set(report["sample_ids"]) <= set(test.index)
