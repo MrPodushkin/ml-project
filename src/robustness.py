@@ -1,6 +1,7 @@
 """Paired perturbation experiment on 20 genuinely held-out SMS; no model substitutes."""
 
 import json
+import os
 import re
 
 import pandas as pd
@@ -11,6 +12,7 @@ from src.predict_sms import InputValidationError, predict_sms
 from src.train import save_json, score
 
 REPLACEMENTS = {"a": "4", "e": "3", "i": "1", "o": "0", "s": "5"}
+ROBUSTNESS_PATH = ROOT / os.environ.get("ML_ROBUSTNESS_REPORT", "metrics/robustness.json")
 
 
 def case_spaces(text):
@@ -106,8 +108,8 @@ def run():
         "conclusion": "Результаты описывают только эти 20 объектов и выбранные изменения. Регистр и пробелы нормализуются TF-IDF; общая устойчивость не доказана.",
         "proposed_measure": "Проверить нормализацию типичных замен букв на отдельной validation/CV внутри train; не настраивать защиту по test. Для входов без словарных признаков рассмотреть отказ с ручной обработкой.",
     }
-    pd.DataFrame(records).to_csv(ROOT / "metrics/robustness_private.csv", index=False)
-    save_json(ROOT / "metrics/robustness.json", report)
+    pd.DataFrame(records).to_csv(ROBUSTNESS_PATH.with_name("robustness_private.csv"), index=False)
+    save_json(ROBUSTNESS_PATH, report)
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return report
 

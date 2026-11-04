@@ -22,6 +22,10 @@ jobs:
       OMP_NUM_THREADS: "1"
       PYTHONDONTWRITEBYTECODE: "1"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      ML_MODEL_PATH: ci-artifacts/runtime/spam_pipeline.joblib
+      ML_MODEL_MANIFEST: ci-artifacts/runtime/model.sha256
+      ML_EXPERIMENT_METADATA: ci-artifacts/experiment.json
+      ML_ROBUSTNESS_REPORT: ci-artifacts/robustness.json
     defaults:
       run:
         shell: bash

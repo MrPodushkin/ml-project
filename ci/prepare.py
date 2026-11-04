@@ -1,8 +1,9 @@
-"""Obtain verified public data and reproduce the exact private Lab 2 artifact."""
+"""Prepare an isolated CI candidate without changing the Lab 2 reference files."""
 
 import argparse
 import json
 import os
+import shutil
 import tempfile
 import urllib.request
 from pathlib import Path
@@ -11,7 +12,7 @@ import joblib
 
 from ci.common import REPORTS, read_json, write_json
 from src.data_utils import DATA_PATH, ROOT, load_and_check, sha256_file, split_dataset
-from src.model_utils import MODEL_PATH, load_model
+from src.model_utils import MODEL_HASH_PATH, MODEL_PATH, load_model
 from src.prepare_data import prepare
 from src.train import build_pipeline
 
@@ -41,6 +42,8 @@ def make_control():
 
 def prepare_artifacts():
     REPORTS.mkdir(exist_ok=True)
+    if MODEL_PATH.resolve() != (REPORTS / "runtime/spam_pipeline.joblib").resolve():
+        raise ValueError("Activate the isolated CI profile first: source ci/env.sh")
     if not DATA_PATH.exists():
         with urllib.request.urlopen(SOURCE_URL, timeout=60) as response:
             blob = response.read(1024 * 1024 + 1)
@@ -52,30 +55,47 @@ def prepare_artifacts():
             prepare(archive)
     df, data = load_and_check()
     baseline = read_json(ROOT / "metrics/baseline.json")
-    if not MODEL_PATH.exists():
+    canonical = ROOT / "models/spam_pipeline.joblib"
+    MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
+    if canonical.exists():
+        if sha256_file(canonical) != baseline["model_sha256"]:
+            raise ValueError("Local Lab 2 artifact changed; refusing to trust or replace it")
+        shutil.copyfile(canonical, MODEL_PATH)
+        origin = "verified copy of saved Lab 2 artifact"
+    else:
         train, _ = split_dataset(df)
         model = build_pipeline()
         model.fit(train.message.astype(str), train.label.astype(str))
-        MODEL_PATH.parent.mkdir(exist_ok=True)
         with tempfile.TemporaryDirectory(dir=MODEL_PATH.parent) as folder:
             candidate = Path(folder) / "candidate.joblib"
             joblib.dump(model, candidate)
-            if sha256_file(candidate) != baseline["model_sha256"]:
-                raise ValueError(
-                    "Rebuilt artifact differs from Lab 2 SHA256; baseline is unchanged"
-                )
             os.replace(candidate, MODEL_PATH)
+        origin = "locally rebuilt candidate from verified data and fixed Lab 2 parameters"
+    model_hash = sha256_file(MODEL_PATH)
+    MODEL_HASH_PATH.write_text(f"{model_hash}  models/spam_pipeline.joblib\n", encoding="utf-8")
+    # Only bind a run-specific artifact to the unchanged expected Lab 2 metrics/split.
+    # This is not a new metric baseline; neither reference file is overwritten.
+    metadata = {
+        **baseline,
+        "model_sha256": model_hash,
+        "model_file": str(MODEL_PATH.relative_to(ROOT)),
+        "reference_model_sha256": baseline["model_sha256"],
+    }
+    write_json(ROOT / os.environ["ML_EXPERIMENT_METADATA"], metadata)
     load_model()
-    if sha256_file(MODEL_PATH) != baseline["model_sha256"]:
-        raise ValueError("Unexpected model version")
     control = make_control()
+    from src.robustness import run
+
+    run()
     result = {
         "source": SOURCE_URL,
         "dataset_sha256": data["dataset_sha256"],
-        "model_sha256": sha256_file(MODEL_PATH),
+        "model_sha256": model_hash,
+        "lab2_model_sha256": baseline["model_sha256"],
+        "matches_lab2_bytes": model_hash == baseline["model_sha256"],
         "control_sha256": sha256_file(control),
         "baseline_sha256": sha256_file(ROOT / "config/model_baseline.json"),
-        "model_provenance": "locally trained from verified data; byte-identical to Lab 2",
+        "model_provenance": origin,
     }
     write_json(REPORTS / "provenance.json", result)
     print(json.dumps(result, indent=2))

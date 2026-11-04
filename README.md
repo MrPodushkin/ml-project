@@ -14,6 +14,7 @@ python3 -m venv .lab3-venv
 source .lab3-venv/bin/activate
 python -m pip install --only-binary=:all: -r requirements-ci.txt
 export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
+source ci/env.sh
 python -m ci.prepare
 # На сервере, где Docker требует sudo:
 sudo -v
@@ -22,7 +23,7 @@ LAB3_DOCKER_SUDO=1 bash ci/run_local.sh
 # bash ci/run_local.sh
 ```
 
-`requirements-runtime.txt` фиксирует полный набор runtime-зависимостей, `requirements-ci.txt` — версии инструментов проверки. Обучение не зависит от ноутбука. В CI отсутствующий артефакт восстанавливается из проверенного официального датасета той же архитектурой и seed и принимается только при совпадении SHA256 с артефактом ЛР2. `ci.prepare` не меняет `metrics/baseline.json`, `config/model_baseline.json` или `model.sha256`. На сервере используется уже сохранённый артефакт.
+`requirements-runtime.txt` фиксирует полный набор из 11 runtime-зависимостей, `requirements-ci.txt` — версии инструментов проверки. Обучение не зависит от ноутбука. CI-профиль размещает кандидатную модель, её манифест и сведения запуска отдельно в `ci-artifacts/`. На сервере кандидат копируется из проверенного артефакта ЛР2; на чистом runner обучается с теми же параметрами и seed на проверенных данных. Побайтовое совпадение сериализации между разными машинами не предполагается: SHA256 кандидата записывается в его отдельный манифест и проверяется перед загрузкой и внутри Docker. Тесты сравнивают качество с закреплёнными результатами ЛР2. `ci.prepare` не меняет `metrics/baseline.json`, `config/model_baseline.json`, исходную модель и `model.sha256`.
 
 Контроль CI — 20 фиксированных сообщений из отложенной выборки ЛР2, 10 ham и 10 spam, без пересечения с train. В Git сохраняются ID, схема, версия и SHA256; тексты формируются локально в игнорируемом `ci-artifacts/control.json`. Источник, политика пропусков, ограничения и границы классов: [data_policy.json](config/data_policy.json). Пропуски и неверные SMS отклоняются, заполнение не применяется. Повторяемый контроль CI не заменяет независимую итоговую оценку на полном test.
 
@@ -43,6 +44,7 @@ Dockerfile использует официальный `python:3.14.4-slim-trixi
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+unset ML_MODEL_PATH ML_MODEL_MANIFEST ML_EXPERIMENT_METADATA ML_ROBUSTNESS_REPORT
 python -m pip install -r requirements.txt
 curl --fail --location https://archive.ics.uci.edu/static/public/228/sms+spam+collection.zip -o data/sms_spam.zip
 python -m src.prepare_data data/sms_spam.zip
