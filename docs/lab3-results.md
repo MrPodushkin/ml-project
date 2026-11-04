@@ -1,6 +1,6 @@
 # ЛР3 Безопасный CI/CD для SMS-классификатора
 
-Реализованы GitHub Actions, дополнительные поведенческие тесты, Ruff, Bandit, pip-audit, data gate, model gate, сборка Docker, проверка конфигурации и сканирование реального образа Trivy. Команды и политики приведены в корневом README. Результаты фактических запусков и ссылки добавляются после завершения проверки.
+Реализованы GitHub Actions, дополнительные поведенческие тесты, Ruff, Bandit, pip-audit, data gate, model gate, сборка Docker, проверка конфигурации и сканирование реального образа Trivy. Команды и политики приведены в корневом README. Проверки выполнены 4 ноября 2026 года. Полный pipeline успешно завершён на GitHub и на сервере; три отдельные демонстрации подтвердили остановку на назначенных gates.
 
 ## Происхождение контрольной выборки
 
@@ -28,3 +28,29 @@ Security-демонстрация безопасна: уязвимый паке�
 - Ruff: https://docs.astral.sh/ruff/configuration/
 - pip-audit: https://github.com/pypa/pip-audit
 - Trivy: https://trivy.dev/docs/latest/getting-started/installation/
+
+## Подтверждённые запуски GitHub Actions
+
+| Сценарий | Commit | Запуск | Итог |
+|---|---|---|---|
+| Рабочая конфигурация | `a2c2d6dd8b8b6a4c9f311f19f05a692f48cfac51` | [41818993645](https://github.com/MrPodushkin/ml-project/actions/runs/41818993645) | Success, все обязательные этапы пройдены |
+| Нарушение данных | `576bd71499332cbaea3e30a5df1d75cac867e800` | [41816992802](https://github.com/MrPodushkin/ml-project/actions/runs/41816992802) | Failure на Data quality gate, сборка Skipped |
+| Слабая модель | `3f7460c6a89df02e924f0fd42bba7e2653efec97` | [41817013906](https://github.com/MrPodushkin/ml-project/actions/runs/41817013906) | Failure на Model quality gate, сборка Skipped |
+| Имитированный CRITICAL | `89937fa43ea9e8346832ee21dcc81d5bec827d83` | [41817032004](https://github.com/MrPodushkin/ml-project/actions/runs/41817032004) | Failure на Security policy demonstration, последующие проверки и сборка Skipped |
+
+## Результаты проверок
+
+- Pytest: 64 теста, 0 failures, 0 errors, 0 skipped. Используются настоящие сохранённые модели и копии данных, без mock-объектов.
+- Ruff и Bandit: проверки пройдены, замечаний Bandit — 0.
+- pip-audit: проверены все 11 runtime-пакетов; уязвимостей и пропущенных пакетов — 0.
+- Data gate: 20 строк, 10 ham и 10 spam, версия и SHA256 совпадают.
+- Model gate: F1 spam кандидата = 0,9473684211, baseline = 0,9473684211, порог = 0,9000, exit code 0.
+- Dockerfile: 0 блокирующих HIGH/CRITICAL/UNKNOWN замечаний конфигурации.
+- Образ: CRITICAL = 0, UNKNOWN = 0, HIGH = 5, MEDIUM = 41, LOW = 5. Security gate пройден согласно опубликованной политике CRITICAL/UNKNOWN; остальные находки остаются видимыми в полном отчёте Trivy и не исключаются.
+- Контейнер: UID 10001, smoke_passed=true; проверены реальные ответы ham и spam, сеть отключена, файловая система read-only, capabilities сброшены.
+
+Финальный runtime использует официальный `ubuntu:26.04@sha256:6a06111c3b0a8600feadb270aec771dc239bf407b25625f93f44ab00e11f4d3c`. Python 3.14.10 копируется из официального `python:3.14.10-slim-trixie@sha256:930e1abba7c4e8f96ed93e8012c35d174d7732752731bbd5e8e757d7ec6f3966`; устанавливаются только необходимые runtime-библиотеки и закреплённые Python-пакеты. Компиляторы не устанавливаются. SQLite и другие находки не подавляются.
+
+В указанном успешном CI-запуске SHA256 кандидата — `391b01488e0856decd09722beb0eaf5b4e0059ed22e1201a6a38083d5e432431`. ID просканированного образа — `sha256:6981dce6a7d80e9ff64fd5ff124a8fb3e2bda34c504f00eea3fd737a63e4f016`; тот же ID записан проверкой non-root/smoke. Для нового запуска SHA256 кандидата сохраняется заново в его собственном манифесте и отчётах; это не перезапись baseline.
+
+Отчёты доступны в Artifacts каждого запуска, срок хранения — 14 дней. На сервере результаты находятся в `ci-artifacts/`, а отдельные сценарии — в `~/lab3-evidence/demo-data`, `demo-model` и `demo-security`. Не публикуются контрольные SMS, приватные CSV, бинарная модель и Docker-архив. Образ в registry не отправляется, сервис не развёртывается.
