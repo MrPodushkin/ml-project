@@ -1,13 +1,14 @@
 """Load only the locally trained artifact after checking its manifest."""
 
+import os
 from pathlib import Path
 
 import joblib
 
 from src.data_utils import ROOT, sha256_file
 
-MODEL_PATH = ROOT / "models/spam_pipeline.joblib"
-MODEL_HASH_PATH = ROOT / "model.sha256"
+MODEL_PATH = ROOT / os.environ.get("ML_MODEL_PATH", "models/spam_pipeline.joblib")
+MODEL_HASH_PATH = ROOT / os.environ.get("ML_MODEL_MANIFEST", "model.sha256")
 
 
 def load_model(model_path=MODEL_PATH, checksum_path=MODEL_HASH_PATH):
