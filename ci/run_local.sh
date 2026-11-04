@@ -32,6 +32,9 @@ verify_nonroot() {
   cat ci-artifacts/container-uid.txt
   test "$(cat ci-artifacts/container-uid.txt)" != 0
 }
+smoke_check() {
+  "${docker_command[@]}" run --rm --read-only --network none --cap-drop ALL --security-opt no-new-privileges --pids-limit 64 --memory 512m "$image" --smoke | tee ci-artifacts/container-smoke.json
+}
 image=ml-project:lab3
 run artifacts python -m ci.prepare
 python -m ci.metadata
@@ -51,7 +54,9 @@ run docker_build "${docker_command[@]}" build --pull -t "$image" .
 run config_scan "$trivy" config --severity HIGH,CRITICAL,UNKNOWN --exit-code 1 --format json --output ci-artifacts/trivy-config.json Dockerfile
 run image_export "${docker_command[@]}" save --output ci-artifacts/image.tar "$image"
 run image_scan "$trivy" image --input ci-artifacts/image.tar --scanners vuln --format json --output ci-artifacts/trivy-image.json
+"$trivy" --version > ci-artifacts/trivy-version.txt
 run security_gate python -m ci.security_gate
 run non_root verify_nonroot
-run smoke "${docker_command[@]}" run --rm --read-only --network none --cap-drop ALL --security-opt no-new-privileges --pids-limit 64 --memory 512m "$image" --smoke
+run smoke smoke_check
+"${docker_command[@]}" image inspect "$image" --format '{"image_id":"{{.Id}}","user":"{{.Config.User}}"}' > ci-artifacts/container-inspect.json
 printf '\nAll required stages PASSED\n'

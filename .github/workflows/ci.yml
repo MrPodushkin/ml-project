@@ -71,6 +71,7 @@ jobs:
         run: |
           docker save ml-project:lab3 > ci-artifacts/image.tar
           "$HOME/.local/bin/trivy" image --input ci-artifacts/image.tar --scanners vuln --format json --output ci-artifacts/trivy-image.json
+          "$HOME/.local/bin/trivy" --version > ci-artifacts/trivy-version.txt
       - name: Image security gate reject critical and unknown severity
         run: python -m ci.security_gate
       - name: Verify non-root and smoke predictions
@@ -78,6 +79,7 @@ jobs:
           docker run --rm --entrypoint id ml-project:lab3 -u | tee ci-artifacts/container-uid.txt
           test "$(cat ci-artifacts/container-uid.txt)" != 0
           docker run --rm --read-only --network none --cap-drop ALL --security-opt no-new-privileges --pids-limit 64 --memory 512m ml-project:lab3 --smoke | tee ci-artifacts/container-smoke.json
+          docker image inspect ml-project:lab3 --format '{"image_id":"{{.Id}}","user":"{{.Config.User}}"}' > ci-artifacts/container-inspect.json
       - name: Preserve diagnostics even when an earlier gate fails
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -103,3 +105,4 @@ jobs:
             ci-artifacts/trivy-image.json
             ci-artifacts/container-uid.txt
             ci-artifacts/container-smoke.json
+            ci-artifacts/container-inspect.json

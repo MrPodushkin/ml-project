@@ -7,7 +7,7 @@ from sklearn.dummy import DummyClassifier
 
 from ci.common import REPORTS, read_json, scenario, write_json
 from ci.data_gate import check
-from src.data_utils import ROOT, sha256_file
+from src.data_utils import ROOT, load_and_check, sha256_file, split_dataset
 from src.model_utils import MODEL_PATH, load_model
 from src.train import score
 
@@ -23,11 +23,13 @@ def main():
     if scenario() == "model":
         # A real, deliberately weak fitted estimator; not a mock or fabricated metric.
         weak = DummyClassifier(strategy="constant", constant="ham")
-        weak.fit([[0], [1]], ["ham", "spam"])
+        frame, _ = load_and_check()
+        train, _ = split_dataset(frame)
+        weak.fit(train[["message"]], train.label)
         model_path = REPORTS / "weak_candidate.joblib"
         joblib.dump(weak, model_path)
         model = joblib.load(model_path)
-        predictions = model.predict([[0]] * len(rows))
+        predictions = model.predict([[message] for message in messages])
         kind = "real fitted constant-ham DummyClassifier demonstration"
     else:
         predictions = model.predict(messages)
