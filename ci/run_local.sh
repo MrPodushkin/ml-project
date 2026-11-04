@@ -36,6 +36,12 @@ verify_nonroot() {
 smoke_check() {
   "${docker_command[@]}" run --rm --read-only --network none --cap-drop ALL --security-opt no-new-privileges --pids-limit 64 --memory 512m "$image" --smoke | tee ci-artifacts/container-smoke.json
 }
+export_image() {
+  "${docker_command[@]}" save --output ci-artifacts/image.tar "$image"
+  if [[ "${LAB3_DOCKER_SUDO:-0}" == 1 ]]; then
+    sudo -n chown "$(id -u):$(id -g)" ci-artifacts/image.tar
+  fi
+}
 image=ml-project:lab3
 run artifacts python -m ci.prepare
 python -m ci.metadata
@@ -53,7 +59,7 @@ trivy="$HOME/.local/bin/trivy"
 "$trivy" --version > ci-artifacts/trivy-version.txt
 run docker_build "${docker_command[@]}" build --pull -t "$image" .
 run config_scan "$trivy" config --severity HIGH,CRITICAL,UNKNOWN --exit-code 1 --format json --output ci-artifacts/trivy-config.json Dockerfile
-run image_export "${docker_command[@]}" save --output ci-artifacts/image.tar "$image"
+run image_export export_image
 run image_scan "$trivy" image --timeout 15m --db-repository ghcr.io/aquasecurity/trivy-db:2 --input ci-artifacts/image.tar --scanners vuln --format json --output ci-artifacts/trivy-image.json
 "$trivy" --version > ci-artifacts/trivy-version.txt
 run security_gate python -m ci.security_gate
