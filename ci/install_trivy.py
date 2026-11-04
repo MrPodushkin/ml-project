@@ -13,6 +13,12 @@ from src.data_utils import ROOT
 def main():
     config = read_json(ROOT / "config/tools.json")
     target = Path.home() / ".local/bin/trivy"
+    if (
+        target.is_file()
+        and hashlib.sha256(target.read_bytes()).hexdigest() == config["trivy_binary_sha256"]
+    ):
+        print(f"Verified cached Trivy {config['trivy_version']} binary SHA256")
+        return
     with urllib.request.urlopen(config["trivy_linux_amd64_url"], timeout=90) as response:
         data = response.read(150 * 1024 * 1024 + 1)
     if (
@@ -29,6 +35,8 @@ def main():
                 raise ValueError("Invalid Trivy archive entry")
             with source.extractfile(entry) as stream:
                 binary = stream.read()
+    if hashlib.sha256(binary).hexdigest() != config["trivy_binary_sha256"]:
+        raise ValueError("Trivy binary SHA256 mismatch")
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_bytes(binary)
     target.chmod(0o755)

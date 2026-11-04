@@ -1,9 +1,12 @@
 """Behavioral gate tests using actual data copies and real model objects; no mocks."""
 
 from copy import deepcopy
+from importlib.metadata import requires, version
 
 import pandas as pd
 import pytest
+from packaging.requirements import Requirement
+from packaging.utils import canonicalize_name
 
 from ci.common import REPORTS, read_json
 from ci.data_gate import check, validate_control
@@ -38,6 +41,23 @@ def test_metric_known_confusion_counts():
     result = score(["spam", "spam", "ham", "ham"], ["spam", "ham", "spam", "ham"])
     for metric in ("accuracy", "precision_spam", "recall_spam", "f1_spam"):
         assert result[metric] == pytest.approx(0.5)
+
+
+def test_runtime_lock_covers_actual_transitive_dependencies():
+    pins = {}
+    for line in (ROOT / "requirements-runtime.txt").read_text().splitlines():
+        if line and not line.startswith("#"):
+            requirement = Requirement(line)
+            assert str(requirement.specifier).startswith("==")
+            pins[canonicalize_name(requirement.name)] = requirement
+    for name, pin in pins.items():
+        assert version(name) in pin.specifier
+        for dependency in requires(name) or []:
+            required = Requirement(dependency)
+            if required.marker is None or required.marker.evaluate({"extra": ""}):
+                assert canonicalize_name(required.name) in pins, (
+                    f"Unpinned transitive dependency: {required.name}"
+                )
 
 
 def test_verified_control_passes(data_policy):
