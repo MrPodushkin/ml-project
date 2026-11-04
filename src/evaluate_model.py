@@ -1,6 +1,7 @@
 """Verify and evaluate the same artifact and exact split recorded by training."""
 
 import json
+import os
 
 from sklearn.metrics import confusion_matrix
 
@@ -10,7 +11,8 @@ from src.train import plot_confusion, save_json, score
 
 
 def load_experiment():
-    baseline = json.loads((ROOT / "metrics/baseline.json").read_text(encoding="utf-8"))
+    metadata_path = ROOT / os.environ.get("ML_EXPERIMENT_METADATA", "metrics/baseline.json")
+    baseline = json.loads(metadata_path.read_text(encoding="utf-8"))
     df, report = load_and_check()
     train, test = split_dataset(df)
     if baseline["dataset_sha256"] != report["dataset_sha256"] or baseline[

@@ -13,8 +13,8 @@ RUN python -m pip install --no-cache-dir --only-binary=:all: -r requirements-run
     && useradd --uid 10001 --gid app --no-create-home --shell /usr/sbin/nologin app
 
 COPY src/__init__.py src/data_utils.py src/model_utils.py src/predict_sms.py src/container_predict.py ./src/
-COPY models/spam_pipeline.joblib ./models/spam_pipeline.joblib
-COPY model.sha256 ./model.sha256
+COPY ci-artifacts/runtime/spam_pipeline.joblib ./models/spam_pipeline.joblib
+COPY ci-artifacts/runtime/model.sha256 ./model.sha256
 RUN sha256sum --check model.sha256
 
 USER 10001:10001
