@@ -70,7 +70,7 @@ jobs:
       - name: Scan actual built image
         run: |
           docker save ml-project:lab3 > ci-artifacts/image.tar
-          "$HOME/.local/bin/trivy" image --input ci-artifacts/image.tar --scanners vuln --format json --output ci-artifacts/trivy-image.json
+          "$HOME/.local/bin/trivy" image --timeout 15m --db-repository ghcr.io/aquasecurity/trivy-db:2 --input ci-artifacts/image.tar --scanners vuln --format json --output ci-artifacts/trivy-image.json
           "$HOME/.local/bin/trivy" --version > ci-artifacts/trivy-version.txt
       - name: Image security gate reject critical and unknown severity
         run: python -m ci.security_gate

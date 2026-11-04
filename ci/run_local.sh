@@ -53,7 +53,7 @@ trivy="$HOME/.local/bin/trivy"
 run docker_build "${docker_command[@]}" build --pull -t "$image" .
 run config_scan "$trivy" config --severity HIGH,CRITICAL,UNKNOWN --exit-code 1 --format json --output ci-artifacts/trivy-config.json Dockerfile
 run image_export "${docker_command[@]}" save --output ci-artifacts/image.tar "$image"
-run image_scan "$trivy" image --input ci-artifacts/image.tar --scanners vuln --format json --output ci-artifacts/trivy-image.json
+run image_scan "$trivy" image --timeout 15m --db-repository ghcr.io/aquasecurity/trivy-db:2 --input ci-artifacts/image.tar --scanners vuln --format json --output ci-artifacts/trivy-image.json
 "$trivy" --version > ci-artifacts/trivy-version.txt
 run security_gate python -m ci.security_gate
 run non_root verify_nonroot
