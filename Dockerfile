@@ -1,4 +1,4 @@
-FROM python:3.14.4-slim-trixie@sha256:2ca02f32b4d9d893863367ce07ec1972819f476dd38d8612f2a9cb6a41cbb727
+FROM python:3.14.10-slim-trixie@sha256:930e1abba7c4e8f96ed93e8012c35d174d7732752731bbd5e8e757d7ec6f3966
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -6,6 +6,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     OPENBLAS_NUM_THREADS=1 \
     OMP_NUM_THREADS=1
 WORKDIR /app
+
+# Apply available fixes; SQLite is unused by inference and has unresolved findings.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends --only-upgrade ca-certificates liblzma5 perl-base \
+    && apt-get purge -y --auto-remove libsqlite3-0 \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY requirements-runtime.txt ./
 RUN python -m pip install --no-cache-dir --only-binary=:all: -r requirements-runtime.txt \
