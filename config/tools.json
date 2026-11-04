@@ -1,0 +1,5 @@
+{
+  "trivy_version": "0.76.1",
+  "trivy_linux_amd64_url": "https://github.com/aquasecurity/trivy/releases/download/v0.76.1/trivy_0.76.1_Linux-64bit.tar.gz",
+  "trivy_linux_amd64_sha256": "c7cbe3137fb8a48a17574bede3dd6beb16742d1e9772929940fc90082c39d9c0"
+}

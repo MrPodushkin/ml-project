@@ -1,0 +1,4 @@
+{
+  "direction": "higher_is_better",
+  "max_relative_degradation": 0.05
+}

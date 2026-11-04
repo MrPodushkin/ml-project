@@ -1,0 +1,13 @@
+**
+!requirements-runtime.txt
+!src/
+src/**
+!src/__init__.py
+!src/data_utils.py
+!src/model_utils.py
+!src/predict_sms.py
+!src/container_predict.py
+!models/
+models/**
+!models/spam_pipeline.joblib
+!model.sha256

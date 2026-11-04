@@ -1,0 +1,12 @@
+{
+  "metric": "f1_spam",
+  "value": 0.9473684210526315,
+  "data_version": "sms-control-v1",
+  "data_sha256": "9beff59f298fc29a534734045629335d66f7b7ad5d0d4feba41acb51707023f3",
+  "source_sha256": "7d039a24a6083ed9ef0f806ebad56bbb976e3aeb8de05669173bfdc4996c239d",
+  "sample_size": 20,
+  "lab2_model_sha256": "f054edc2c35248ad9cb26a78ce7d8be044558fe39d3d73d8cf487777bbfeb06a",
+  "lab2_commit": "1de4cc1d2373b9a1e44160392d916a9e66e8d600",
+  "lab2_full_test_f1": 0.916030534351145,
+  "note": "Lab 2 saved model evaluated on the same fixed CI subset; not the F1 of all 1032 test rows"
+}

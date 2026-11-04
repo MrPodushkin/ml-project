@@ -1,16 +1,7 @@
-
 try:
-    from src.predict_sms import (
-        predict_sms,
-        load_model,
-        InputValidationError
-    )
+    from src.predict_sms import InputValidationError, load_model, predict_sms
 except ModuleNotFoundError:
-    from predict_sms import (
-        predict_sms,
-        load_model,
-        InputValidationError
-    )
+    from predict_sms import InputValidationError, load_model, predict_sms
 
 model = load_model()
 
@@ -34,4 +25,3 @@ for i, message in enumerate(messages, 1):
 
     except InputValidationError as error:
         print("Отклонено:", error)
-

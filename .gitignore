@@ -24,3 +24,10 @@ metrics/*private*.csv
 
 # Local backups
 *.py.bak
+
+# Disposable CI data, private candidate artifacts and scanner caches
+ci-artifacts/
+.ruff_cache/
+.trivy-cache/
+.lab3-venv/
+data/ci-control.json

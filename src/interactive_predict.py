@@ -1,4 +1,4 @@
-from src.predict_sms import load_model, predict_sms, InputValidationError
+from src.predict_sms import InputValidationError, load_model, predict_sms
 
 
 def main():

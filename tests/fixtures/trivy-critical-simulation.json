@@ -1,0 +1,18 @@
+{
+  "SchemaVersion": 2,
+  "ArtifactName": "SAFE POLICY SIMULATION - NO VULNERABLE IMAGE",
+  "Results": [
+    {
+      "Target": "simulated-package-report",
+      "Vulnerabilities": [
+        {
+          "PkgName": "demo-package-not-installed",
+          "InstalledVersion": "0.0.0",
+          "VulnerabilityID": "SIMULATED-CRITICAL-0001",
+          "Severity": "CRITICAL",
+          "FixedVersion": "0.0.1"
+        }
+      ]
+    }
+  ]
+}

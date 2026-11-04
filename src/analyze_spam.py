@@ -1,12 +1,8 @@
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
 
 df = pd.read_csv(
-    "data/SMSSpamCollection",
-    sep="\t",
-    header=None,
-    names=["label", "message"],
-    encoding="utf-8"
+    "data/SMSSpamCollection", sep="\t", header=None, names=["label", "message"], encoding="utf-8"
 )
 
 print("Размер датасета:", df.shape)
