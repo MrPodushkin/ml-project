@@ -35,7 +35,8 @@ verify_nonroot() {
 }
 smoke_check() {
   if [[ "${LAB3_DOCKER_SUDO:-0}" == 1 ]]; then
-    python -m ci.container_api_smoke --image "$image" --sudo
+    sudo -n "$(command -v python)" -m ci.container_api_smoke --image "$image"
+    sudo -n chown "$(id -u):$(id -g)" ci-artifacts/container-smoke.json ci-artifacts/container-api.log
   else
     python -m ci.container_api_smoke --image "$image"
   fi

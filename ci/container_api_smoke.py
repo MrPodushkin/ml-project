@@ -17,6 +17,9 @@ def main():
     parser.add_argument("--image", default="ml-project:lab4")
     parser.add_argument("--sudo", action="store_true")
     args = parser.parse_args()
+    if args.sudo:
+        # Authenticate under this Python parent before its docker subprocesses.
+        subprocess.run(["sudo", "-v"], check=True)
     docker = ["sudo", "-n", "docker"] if args.sudo else ["docker"]
     name = "ml-project-lab4-smoke-" + secrets.token_hex(4)
     with tempfile.TemporaryDirectory(prefix="lab4-smoke-") as folder:

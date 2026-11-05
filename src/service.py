@@ -90,7 +90,11 @@ class RateLimiter:
     def allow(self, key):
         now = time.monotonic()
         if key not in self.clients and len(self.clients) >= 1024:
-            return False
+            for old_key, history in list(self.clients.items()):
+                if history[-1] <= now - self.period:
+                    del self.clients[old_key]
+            if len(self.clients) >= 1024:
+                return False
         times = self.clients.setdefault(key, deque())
         self.clients.move_to_end(key)
         while times and times[0] <= now - self.period:

@@ -12,7 +12,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.model_utils import MODEL_HASH_PATH, MODEL_PATH
-from src.service import Settings, create_app
+from src.service import RateLimiter, Settings, create_app
 
 TOKEN = "test-only-api-token-not-a-runtime-secret-123456"
 AUTH = {"Authorization": "Bearer " + TOKEN}
@@ -307,3 +307,14 @@ def test_original_model_and_static_safety(service):
 def test_empty_server_secret_refused():
     with pytest.raises(ValueError, match="at least 32"):
         Settings(token="")
+
+
+def test_limiter_capacity_recovers_after_real_window_expiry():
+    limiter = RateLimiter(limit=1, period=0.1)
+    for index in range(1024):
+        assert limiter.allow(f"test-client-{index}")
+    assert not limiter.allow("new-client")
+    assert len(limiter.clients) <= 1024
+    time.sleep(0.11)
+    assert limiter.allow("new-client")
+    assert len(limiter.clients) <= 1024
