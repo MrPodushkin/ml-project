@@ -11,7 +11,9 @@
 
 ```bash
 cd ~/ml-project
+python3 -m venv .lab4-venv
 source .lab4-venv/bin/activate
+python -m pip install --only-binary=:all: -r requirements-ci.txt
 source ci/env.sh
 python -m ci.prepare
 sudo docker build --pull -t ml-project:lab4 .
@@ -28,6 +30,7 @@ Docker администраторы могут читать runtime environment;
 Без Docker, из того же окружения после подготовки артефакта:
 
 ```bash
+python -m ci.lab4_secrets
 set -a
 source ~/.config/ml-project/lab4.env
 set +a
@@ -145,11 +148,11 @@ Reverse proxy не установлен; мониторинг отказов pro
 
 ```bash
 python -m ci.lab4_demo
-cat ci-artifacts/lab4/demo.json
-cat ci-artifacts/lab4/api-log.jsonl
-cat ci-artifacts/lab4/metrics-before.prom
-cat ci-artifacts/lab4/metrics-after.prom
-cat ci-artifacts/lab4/metrics-recovered.prom
+python -m ci.lab4_evidence result
+python -m ci.lab4_evidence logs
+python -m ci.lab4_evidence before
+python -m ci.lab4_evidence after
+python -m ci.lab4_evidence recovered
 ```
 
 Запускается отдельный временный сервис на loopback, с новым секретом в памяти,

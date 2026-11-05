@@ -1,4 +1,17 @@
--r requirements-runtime.txt
+# Flattened complete service runtime lock: ML + API, no nested includes.
+# Complete runtime dependency closure; versions match the Lab 2 artifact.
+cloudpickle==3.1.2
+joblib==1.6.0
+narwhals==2.28.0
+numpy==2.5.4
+pandas==3.0.6
+python-dateutil==2.9.0.post0
+scikit-learn==1.9.1
+scipy==1.18.1
+six==1.17.0
+threadpoolctl==3.7.0
+tzdata==2026.5
+
 # Complete API runtime closure; the Lab 2 ML pins remain unchanged.
 annotated-doc==0.0.5
 annotated-types==0.8.0

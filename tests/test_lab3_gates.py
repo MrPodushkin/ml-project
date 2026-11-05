@@ -43,9 +43,10 @@ def test_metric_known_confusion_counts():
         assert result[metric] == pytest.approx(0.5)
 
 
-def test_runtime_lock_covers_actual_transitive_dependencies():
+@pytest.mark.parametrize("filename", ["requirements-runtime.txt", "requirements-service.txt"])
+def test_runtime_lock_covers_actual_transitive_dependencies(filename):
     pins = {}
-    for line in (ROOT / "requirements-runtime.txt").read_text().splitlines():
+    for line in (ROOT / filename).read_text().splitlines():
         if line and not line.startswith("#"):
             requirement = Requirement(line)
             assert str(requirement.specifier).startswith("==")
