@@ -9,6 +9,7 @@ STAGES = [
     "lint",
     "bandit",
     "tests",
+    "api_detection",
     "dependency_audit",
     "security_demonstration",
     "data_gate",

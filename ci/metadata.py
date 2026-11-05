@@ -17,7 +17,18 @@ def main():
         "python": platform.python_version(),
         "tools": {name: version(name) for name in ("pytest", "ruff", "bandit", "pip-audit")},
         "runtime_versions": {
-            name: version(name) for name in ("scikit-learn", "numpy", "scipy", "pandas", "joblib")
+            name: version(name)
+            for name in (
+                "scikit-learn",
+                "numpy",
+                "scipy",
+                "pandas",
+                "joblib",
+                "fastapi",
+                "uvicorn",
+                "starlette",
+                "prometheus-client",
+            )
         },
         "policy_sha256": {
             name: sha256_file(ROOT / "config" / name)

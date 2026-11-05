@@ -1,5 +1,6 @@
 **
 !requirements-runtime.txt
+!requirements-service.txt
 !src/
 src/**
 !src/__init__.py
@@ -7,6 +8,13 @@ src/**
 !src/model_utils.py
 !src/predict_sms.py
 !src/container_predict.py
+!src/service.py
+!src/service_worker.py
+!src/service_metrics.py
+!src/service_health.py
+!src/service_smoke.py
+!static/
+!static/**
 !ci-artifacts/
 ci-artifacts/**
 !ci-artifacts/runtime/

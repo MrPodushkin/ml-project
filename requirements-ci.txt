@@ -1,5 +1,10 @@
--r requirements-runtime.txt
+-r requirements-service.txt
 bandit==1.9.4
 pip-audit==2.10.1
 pytest==9.1.1
 ruff==0.16.8
+
+# Real HTTP/ASGI integration client.
+certifi==2026.10.23
+httpcore==1.0.9
+httpx==0.28.1

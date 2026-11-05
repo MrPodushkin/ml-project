@@ -1,4 +1,4 @@
-name: Lab 3 secure ML pipeline
+name: Lab 4 secure SMS API pipeline
 
 on:
   push:
@@ -9,12 +9,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: lab3-${{ github.workflow }}-${{ github.ref }}
+  group: lab4-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   checks:
-    name: Code data model and container gates
+    name: Code data model API monitoring and container gates
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
@@ -51,8 +51,10 @@ jobs:
         run: python -m bandit -r src/ -f json -o ci-artifacts/bandit.json
       - name: Real unit and integration tests
         run: python -m pytest tests/ -q --junitxml=ci-artifacts/pytest.xml | tee ci-artifacts/pytest.txt
+      - name: Real HTTP detection and recovery scenario
+        run: python -m ci.lab4_demo
       - name: Dependency audit gate reject every known vulnerability
-        run: python -m pip_audit -r requirements-runtime.txt --no-deps --disable-pip --format json --output ci-artifacts/pip-audit.json
+        run: python -m pip_audit -r requirements-service.txt --no-deps --disable-pip --format json --output ci-artifacts/pip-audit.json
       - name: Security policy demonstration simulated report only
         run: python -m ci.security_gate --demo --output ci-artifacts/security-demonstration.json
       - name: Data quality gate
@@ -68,27 +70,27 @@ jobs:
           python -m ci.install_trivy
           "$HOME/.local/bin/trivy" --version > ci-artifacts/trivy-version.txt
       - name: Build non-root runtime image
-        run: docker build --pull -t ml-project:lab3 .
+        run: docker build --pull -t ml-project:lab4 .
       - name: Dockerfile configuration gate
         run: '"$HOME/.local/bin/trivy" config --severity HIGH,CRITICAL,UNKNOWN --exit-code 1 --format json --output ci-artifacts/trivy-config.json Dockerfile'
       - name: Scan actual built image
         run: |
-          docker save ml-project:lab3 > ci-artifacts/image.tar
+          docker save ml-project:lab4 > ci-artifacts/image.tar
           "$HOME/.local/bin/trivy" image --timeout 15m --db-repository ghcr.io/aquasecurity/trivy-db:2 --input ci-artifacts/image.tar --scanners vuln --format json --output ci-artifacts/trivy-image.json
           "$HOME/.local/bin/trivy" --version > ci-artifacts/trivy-version.txt
       - name: Image security gate reject critical and unknown severity
         run: python -m ci.security_gate
-      - name: Verify non-root and smoke predictions
+      - name: Verify non-root and real container HTTP health and predictions
         run: |
-          docker run --rm --entrypoint id ml-project:lab3 -u | tee ci-artifacts/container-uid.txt
+          docker run --rm --entrypoint id ml-project:lab4 -u | tee ci-artifacts/container-uid.txt
           test "$(cat ci-artifacts/container-uid.txt)" != 0
-          docker run --rm --read-only --network none --cap-drop ALL --security-opt no-new-privileges --pids-limit 64 --memory 512m ml-project:lab3 --smoke | tee ci-artifacts/container-smoke.json
-          docker image inspect ml-project:lab3 --format '{"image_id":"{{.Id}}","user":"{{.Config.User}}"}' > ci-artifacts/container-inspect.json
+          python -m ci.container_api_smoke
+          docker image inspect ml-project:lab4 --format '{"image_id":"{{.Id}}","user":"{{.Config.User}}"}' > ci-artifacts/container-inspect.json
       - name: Preserve diagnostics even when an earlier gate fails
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: lab3-reports-${{ github.run_id }}
+          name: lab4-reports-${{ github.run_id }}
           if-no-files-found: warn
           retention-days: 14
           path: |
@@ -110,3 +112,5 @@ jobs:
             ci-artifacts/container-uid.txt
             ci-artifacts/container-smoke.json
             ci-artifacts/container-inspect.json
+            ci-artifacts/container-api.log
+            ci-artifacts/lab4/

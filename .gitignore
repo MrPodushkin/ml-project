@@ -30,4 +30,5 @@ ci-artifacts/
 .ruff_cache/
 .trivy-cache/
 .lab3-venv/
+.lab4-venv/
 data/ci-control.json

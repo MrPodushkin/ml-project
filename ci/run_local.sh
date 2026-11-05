@@ -29,12 +29,16 @@ if [[ "${LAB3_DOCKER_SUDO:-0}" == 1 ]]; then
   docker_command=(sudo -n docker)
 fi
 verify_nonroot() {
-  "${docker_command[@]}" run --rm --entrypoint id ml-project:lab3 -u > ci-artifacts/container-uid.txt
+  "${docker_command[@]}" run --rm --entrypoint id "$image" -u > ci-artifacts/container-uid.txt
   cat ci-artifacts/container-uid.txt
   test "$(cat ci-artifacts/container-uid.txt)" != 0
 }
 smoke_check() {
-  "${docker_command[@]}" run --rm --read-only --network none --cap-drop ALL --security-opt no-new-privileges --pids-limit 64 --memory 512m "$image" --smoke | tee ci-artifacts/container-smoke.json
+  if [[ "${LAB3_DOCKER_SUDO:-0}" == 1 ]]; then
+    python -m ci.container_api_smoke --image "$image" --sudo
+  else
+    python -m ci.container_api_smoke --image "$image"
+  fi
 }
 export_image() {
   "${docker_command[@]}" save --output ci-artifacts/image.tar "$image"
@@ -42,13 +46,14 @@ export_image() {
     sudo -n chown "$(id -u):$(id -g)" ci-artifacts/image.tar
   fi
 }
-image=ml-project:lab3
+image=ml-project:lab4
 run artifacts python -m ci.prepare
 python -m ci.metadata
 run lint bash -o pipefail -c 'ruff check src/ tests/ ci/ | tee ci-artifacts/ruff.txt'
 run bandit python -m bandit -r src/ -f json -o ci-artifacts/bandit.json
 run tests bash -o pipefail -c 'python -m pytest tests/ -q --junitxml=ci-artifacts/pytest.xml | tee ci-artifacts/pytest.txt'
-run dependency_audit python -m pip_audit -r requirements-runtime.txt --no-deps --disable-pip --format json --output ci-artifacts/pip-audit.json
+run api_detection python -m ci.lab4_demo
+run dependency_audit python -m pip_audit -r requirements-service.txt --no-deps --disable-pip --format json --output ci-artifacts/pip-audit.json
 run security_demonstration python -m ci.security_gate --demo --output ci-artifacts/security-demonstration.json
 python -m ci.demonstrate
 run data_gate python -m ci.data_gate

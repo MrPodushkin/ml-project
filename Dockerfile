@@ -5,7 +5,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     OPENBLAS_NUM_THREADS=1 \
-    OMP_NUM_THREADS=1
+    OMP_NUM_THREADS=1 \
+    LAB4_HOST=0.0.0.0
 ENV PATH="/usr/local/bin:$PATH"
 WORKDIR /app
 
@@ -18,18 +19,20 @@ RUN apt-get update \
 COPY --from=python_runtime /usr/local /usr/local
 RUN ldconfig
 
-COPY requirements-runtime.txt ./
-RUN python -m pip install --no-cache-dir --only-binary=:all: -r requirements-runtime.txt \
+COPY requirements-runtime.txt requirements-service.txt ./
+RUN python -m pip install --no-cache-dir --only-binary=:all: -r requirements-service.txt \
     && groupadd --gid 10001 app \
     && useradd --uid 10001 --gid app --no-create-home --shell /usr/sbin/nologin app
 
 COPY src/__init__.py src/data_utils.py src/model_utils.py src/predict_sms.py src/container_predict.py ./src/
+COPY src/service.py src/service_worker.py src/service_metrics.py src/service_health.py src/service_smoke.py ./src/
+COPY static/ ./static/
 COPY ci-artifacts/runtime/spam_pipeline.joblib ./models/spam_pipeline.joblib
 COPY ci-artifacts/runtime/model.sha256 ./model.sha256
 RUN sha256sum --check model.sha256
 
 USER 10001:10001
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD ["python", "-m", "src.container_predict", "--smoke"]
-ENTRYPOINT ["python", "-m", "src.container_predict"]
-CMD ["--smoke"]
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD ["python", "-m", "src.service_health"]
+ENTRYPOINT ["python", "-m", "src.service"]

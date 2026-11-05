@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SMS Guard — проверка сообщений</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <main>
+    <header><a href="/" class="brand">SMS<span>GUARD</span></a><span class="badge">Лабораторная работа 4</span></header>
+    <section class="intro"><p class="eyebrow">ПРОВЕРКА СООБЩЕНИЙ</p><h1>Это спам?</h1><p>Введите SMS и получите результат классификации. Модель обучена на англоязычных сообщениях.</p><div id="health" class="health" role="status">Проверяем доступность…</div></section>
+    <div class="grid">
+      <section class="card">
+        <form id="predict-form">
+          <label for="token">API-токен</label>
+          <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="Введите токен доступа" required>
+          <p class="hint">Токен используется только для текущих запросов и не сохраняется в браузере.</p>
+          <div class="label-row"><label for="message">Текст сообщения</label><span id="counter">0 / 1000</span></div>
+          <textarea id="message" maxlength="1000" rows="7" placeholder="Например: Hi! Are we meeting at six?" required></textarea>
+          <div class="examples"><button type="button" data-example="Hi! Are we meeting at six?">Обычное SMS</button><button type="button" data-example="FREE cash prize! Claim now!!!">Пример спама</button></div>
+          <button class="primary" id="submit" type="submit">Проверить сообщение <span aria-hidden="true">→</span></button>
+        </form>
+      </section>
+      <section class="card result-card" aria-live="polite">
+        <p class="eyebrow">РЕЗУЛЬТАТ</p><h2 id="result-title">Готово к проверке</h2><p id="result-message">Результат появится после отправки сообщения.</p>
+        <dl><dt>Модель</dt><dd id="model-version">—</dd><dt>HTTP-статус</dt><dd id="http-status">—</dd><dt>ID запроса</dt><dd id="request-id">—</dd></dl>
+        <details><summary>Ответ API · JSON</summary><pre id="json-output">{}</pre></details>
+      </section>
+    </div>
+    <footer><span>До 1000 символов · 20 запросов в минуту с одного адреса</span><span>Оценка модели может ошибаться.</span></footer>
+  </main>
+</body>
+</html>
